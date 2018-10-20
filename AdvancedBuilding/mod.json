@@ -1,0 +1,9 @@
+﻿{
+  "Id": "exund.advancedbuilding",
+  "DisplayName": "Advanced Building",
+  "Author": "Exund",
+  "Version": "1.0.0",
+  "Enable": true,
+  "AssemblyName": "Exund.AdvancedBuilding.dll",
+  "EntryMethod": "Exund.AdvancedBuilding.AdvancedBuildingMod.Load"
+}
