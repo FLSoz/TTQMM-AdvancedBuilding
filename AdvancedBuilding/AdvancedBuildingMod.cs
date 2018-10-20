@@ -75,7 +75,10 @@ namespace Exund.AdvancedBuilding
             if (GUILayout.Button("+")) val += interval;
             if (GUILayout.Button("-")) val -= interval;
             GUILayout.EndHorizontal();
-            return val;
+            var rounding = 0;
+            var parts = interval.ToString().Split('.');
+            if (parts.Length > 1) rounding = parts.Last().Length;
+            return (float)Math.Round(val,rounding);
         }
     }
 }
