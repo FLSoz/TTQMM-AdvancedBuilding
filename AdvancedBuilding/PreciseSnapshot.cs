@@ -53,14 +53,14 @@ namespace Exund.AdvancedBuilding
                 var root = this.Blocks.First(b => b.IsRootBlock);
                 this.Blocks.Remove(root);
                 var rBlock = root.ToBlock(position - Vector3.one, rotation, true);
-                tech.blockman.AddBlock(ref rBlock, new IntVector3(root.Position), new OrthoRotation(root.OrthoRotation));
+                tech.blockman.AddBlockToTech(rBlock, new IntVector3(root.Position), new OrthoRotation(root.OrthoRotation));
                 rBlock.trans.localPosition = root.localPosition;
                 rBlock.trans.localEulerAngles = root.localEulerAngles;
 
                 foreach (var b in Blocks)
                 {
                     var rB = b.ToBlock(position - Vector3.one, rotation, true);
-                    tech.blockman.AddBlock(ref rB, new IntVector3(b.Position), new OrthoRotation(b.OrthoRotation));
+                    tech.blockman.AddBlockToTech(rB, new IntVector3(b.Position), new OrthoRotation(b.OrthoRotation));
                     rB.trans.localPosition = b.localPosition;
                     rB.trans.localEulerAngles = b.localEulerAngles;
                 }

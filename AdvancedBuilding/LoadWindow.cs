@@ -65,11 +65,11 @@ namespace Exund.AdvancedBuilding
                     loadedTech = PreciseSnapshot.Load(path, position, rotation);
 
                     Tank playerTank = Singleton.playerTank;
-                    Singleton.Manager<ManTechs>.inst.SetPlayerTank(null, true);
-                    playerTank.RemoveFromNetworkedGame();
+                    Singleton.Manager<ManTechs>.inst.SetPlayerTankLocally(null, true);
+                    playerTank.visible.RemoveFromGame();
 
 
-                    Singleton.Manager<ManTechs>.inst.SetPlayerTank(loadedTech, true);
+                    Singleton.Manager<ManTechs>.inst.SetPlayerTankLocally(loadedTech, true);
                 }
                 catch { }
                 visible = false;
