@@ -20,28 +20,18 @@ namespace Exund.AdvancedBuilding
                 if(File.Exists(path))
                 {
                     visible = true;
-                    return;
+                } 
+                else
+                {
+                    PreciseSnapshot.Save(Singleton.playerTank, AdvancedBuildingMod.PreciseSnapshotsFolder);
                 }
-                PreciseSnapshot.Save(Singleton.playerTank, AdvancedBuildingMod.PreciseSnapshotsFolder);
             }
+            useGUILayout = visible;
         }
 
         private void OnGUI()
         {
             if (!visible) return;
-            if (AdvancedBuildingMod.Nuterra)
-            {
-                GUI.skin = AdvancedBuildingMod.Nuterra;
-            }
-            /*GUI.skin = NuterraGUI.Skin;/*.window = new GUIStyle(GUI.skin.window)
-            {
-                normal =
-            {
-                background = NuterraGUI.LoadImage("Border_BG.png"),
-                textColor = Color.white
-            },
-                border = new RectOffset(16, 16, 16, 16),
-            };*/
             GUI.Window(ID, new Rect((Screen.width - 700f) / 2, (Screen.height - 200f) / 2, 700f, 200f), new GUI.WindowFunction(DoWindow), "");
         }
 

@@ -5,6 +5,10 @@ using System.Text;
 using System.IO;
 using UnityEngine;
 using System.Reflection;
+using System.Reflection.Emit;
+using Nuterra.BlockInjector;
+using Harmony;
+
 
 namespace Exund.AdvancedBuilding
 {
@@ -12,24 +16,12 @@ namespace Exund.AdvancedBuilding
     {
         public static string PreciseSnapshotsFolder = Path.Combine(Application.dataPath, "../PreciseSnapshots");
         private static GameObject _holder;
-        internal static GUISkin Nuterra;
-
-        public static bool ModExists(string name,out Assembly asm)
-        {
-            asm = null;
-            foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
-            {
-                if (assembly.FullName.StartsWith(name))
-                {
-                    asm = assembly;
-                    return true;
-                }
-            }
-            return false;
-        }
 
         public static void Load()
         {
+            var harmony = HarmonyInstance.Create("exund.advancedbuilding");
+            harmony.PatchAll(Assembly.GetExecutingAssembly());
+
             try
             {
                 _holder = new GameObject();
@@ -37,8 +29,8 @@ namespace Exund.AdvancedBuilding
                 _holder.AddComponent<TranslateBlocks>();
                 _holder.AddComponent<ScaleBlocks>();
                 _holder.AddComponent<BlocksInfo>();
-                _holder.AddComponent<SaveWindow>();
-                _holder.AddComponent<LoadWindow>();
+                //_holder.AddComponent<SaveWindow>();
+                //_holder.AddComponent<LoadWindow>();
                 UnityEngine.Object.DontDestroyOnLoad(_holder);
 
                 if (!Directory.Exists(PreciseSnapshotsFolder))
@@ -46,22 +38,23 @@ namespace Exund.AdvancedBuilding
                     Directory.CreateDirectory(PreciseSnapshotsFolder);
                 }
 
-                var a = new Func<Dictionary<string, string>, string>(delegate (Dictionary<string, string> arguments)
-                {
-                     if (!Singleton.playerTank) return "<color=yellow>Specified Tech not found</color>";
+                var asm_path = Assembly.GetExecutingAssembly().Location.Replace("Exund.AdvancedBuilding.dll", "");
 
-                     Vector3 newVel = Singleton.playerTank.rbody.velocity;
-
-                     if (arguments.TryGetValue("X", out string argX)) if (int.TryParse(argX, out int intX)) newVel.x = intX;
-                     if (arguments.TryGetValue("Y", out string argY)) if (int.TryParse(argY, out int intY)) newVel.y = intY;
-                     if (arguments.TryGetValue("Z", out string argZ)) if (int.TryParse(argZ, out int intZ)) newVel.z = intZ;
-                     Singleton.playerTank.rbody.velocity = newVel;
-
-                     return "Tech velocity set to " + newVel.ToString();
-                });
-                            
-            
-
+                new BlockPrefabBuilder(BlockTypes.GSOBlock_111, true)
+                    .SetBlockID(7020)
+                    .SetName("Reticule Research Hadamard Superposer")
+                    .SetDescription("This block can register quantum fluctuations applied on the tech's blocks and stabilize them during the snapshot process.\n\n<b>Warning</b>: Can cause temporary quantum jumps if it enters in contact with zero-stasis gluons.")
+                    .SetFaction(FactionSubTypes.EXP)
+                    .SetCategory(BlockCategories.Accessories)
+                    .SetRarity(BlockRarity.Rare)
+                    .SetPrice(15000)
+                    .SetRecipe(new Dictionary<ChunkTypes, int> {
+                        { ChunkTypes.SeedAI, 5 }
+                    })
+                    .SetModel(GameObjectJSON.MeshFromFile(asm_path + "hadamard_superposer.obj"), true, GameObjectJSON.GetObjectFromGameResources<Material>("RR_Main"))
+                    .SetIcon(GameObjectJSON.ImageFromFile(asm_path + "hadamard_superposer.png"))
+                    .AddComponent<ModuleOffgridStore>()
+                    .RegisterLater();
             } catch(Exception e)
             {
                 Console.WriteLine(e);
@@ -75,10 +68,33 @@ namespace Exund.AdvancedBuilding
             if (GUILayout.Button("+")) val += interval;
             if (GUILayout.Button("-")) val -= interval;
             GUILayout.EndHorizontal();
-            var rounding = 0;
-            var parts = interval.ToString().Split('.');
-            if (parts.Length > 1) rounding = parts.Last().Length;
-            return (float)Math.Round(val,rounding);
+            return (float)Math.Round(val, 6);
+        }
+
+        private static class Patches
+        {
+            [HarmonyPatch(typeof(TankPreset.BlockSpec), "InitFromBlockState")]
+            private static class BlockSpec_InitFromBlockState
+            {
+                static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+                {
+                    var codes = new List<CodeInstruction>(instructions);
+                    var niv = codes.FindIndex(op => op.opcode == OpCodes.Newobj);
+                    codes[niv - 2].operand = typeof(TankBlock).GetProperty("cachedLocalPosition", BindingFlags.Instance | BindingFlags.Public).GetGetMethod(false);
+                    codes[niv - 1] = new CodeInstruction(OpCodes.Nop);
+
+                    /*foreach (var ci in codes)
+                    {
+                        try
+                        {
+                            Console.WriteLine(ci.opcode.ToString() + "\t" + ci.operand.ToString());
+                        } catch {
+                            Console.WriteLine(ci.opcode.ToString());
+                        }
+                    }*/
+                    return codes;
+                }
+            }
         }
     }
 }

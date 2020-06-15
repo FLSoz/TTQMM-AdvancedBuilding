@@ -21,24 +21,12 @@ namespace Exund.AdvancedBuilding
             {
                 visible = true;
             }
+            useGUILayout = visible;
         }
 
         private void OnGUI()
         {
             if (!visible) return;
-            if (AdvancedBuildingMod.Nuterra)
-            {
-                GUI.skin = AdvancedBuildingMod.Nuterra;
-            }
-            /*GUI.skin = NuterraGUI.Skin;/*.window = new GUIStyle(GUI.skin.window)
-            {
-                normal =
-            {
-                background = NuterraGUI.LoadImage("Border_BG.png"),
-                textColor = Color.white
-            },
-                border = new RectOffset(16, 16, 16, 16),
-            };*/
             GUI.Window(ID, new Rect((Screen.width - 700f) / 2, (Screen.height - 500f) / 2, 700f, 500f), new GUI.WindowFunction(DoWindow), "Techs");
         }
 
@@ -65,11 +53,9 @@ namespace Exund.AdvancedBuilding
                     loadedTech = PreciseSnapshot.Load(path, position, rotation);
 
                     Tank playerTank = Singleton.playerTank;
-                    Singleton.Manager<ManTechs>.inst.SetPlayerTank(null, true);
-                    playerTank.RemoveFromNetworkedGame();
-
-
-                    Singleton.Manager<ManTechs>.inst.SetPlayerTank(loadedTech, true);
+                    Singleton.Manager<ManTechs>.inst.RequestSetPlayerTank(null, true);
+                    playerTank.visible.RemoveFromGame();
+                    Singleton.Manager<ManTechs>.inst.RequestSetPlayerTank(loadedTech, true);
                 }
                 catch { }
                 visible = false;

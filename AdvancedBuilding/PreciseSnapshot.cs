@@ -5,11 +5,18 @@ using System.Text;
 using UnityEngine;
 using Newtonsoft.Json;
 using System.IO;
+using System.Reflection;
 
 namespace Exund.AdvancedBuilding
 {
     public static class PreciseSnapshot
     {
+        private static PropertyInfo cachedLocalRotation;
+        static PreciseSnapshot()
+        {
+            cachedLocalRotation = typeof(TankBlock).GetProperty("cachedLocalRotation");
+        }
+
         public static void Save(Tank tech, string folder)
         {
             if (!Directory.Exists(folder))
@@ -49,21 +56,66 @@ namespace Exund.AdvancedBuilding
 
             public Tank ToTech(Vector3 position, Quaternion rotation)
             {
-                Tank tech = Singleton.Manager<ManSpawn>.inst.SpawnEmptyTechRef(0, position, rotation, true, false, this.Name).visible.tank;
-                var root = this.Blocks.First(b => b.IsRootBlock);
+
+                var spawnParams = new ManSpawn.TankSpawnParams()
+                {
+                    forceSpawn = true,
+                    grounded = true,
+                    position = position,
+                    rotation = rotation,
+                    placement = ManSpawn.TankSpawnParams.Placement.PlacedAtPosition,
+                    techData = new TechData()
+                    {
+                        Name = this.Name,
+                        m_CreationData = new TechData.CreationData(),
+                        m_BlockSpecs = new List<TankPreset.BlockSpec>()
+                    }
+                };
+
+                /*var root = this.Blocks.First(b => b.IsRootBlock);
                 this.Blocks.Remove(root);
-                var rBlock = root.ToBlock(position - Vector3.one, rotation, true);
-                tech.blockman.AddBlock(ref rBlock, new IntVector3(root.Position), new OrthoRotation(root.OrthoRotation));
-                rBlock.trans.localPosition = root.localPosition;
-                rBlock.trans.localEulerAngles = root.localEulerAngles;
+                var rblock = root.ToBlock(position - Vector3.one, rotation);
+                rblock.trans.localPosition = root.Position;
+                cachedLocalRotation.SetValue(rblock, root.OrthoRotation, null);
+                var rblockspec = new TankPreset.BlockSpec();
+                rblockspec.InitFromBlockState(rblock, true);
+                spawnParams.techData.m_BlockSpecs.Add(rblockspec);
+
+                rblock.visible.RemoveFromGame();*/
 
                 foreach (var b in Blocks)
                 {
-                    var rB = b.ToBlock(position - Vector3.one, rotation, true);
-                    tech.blockman.AddBlock(ref rB, new IntVector3(b.Position), new OrthoRotation(b.OrthoRotation));
-                    rB.trans.localPosition = b.localPosition;
-                    rB.trans.localEulerAngles = b.localEulerAngles;
+                    var rB = b.ToBlock(position - Vector3.one, rotation);
+                    rB.trans.localPosition = b.Position;
+                    cachedLocalRotation.SetValue(rB, b.OrthoRotation, null);
+                    var rBSpec = new TankPreset.BlockSpec();
+                    rBSpec.InitFromBlockState(rB, true);
+                    spawnParams.techData.m_BlockSpecs.Add(rBSpec);
+                    rB.visible.RemoveFromGame();
                 }
+
+                var tech = ManSpawn.inst.SpawnUnmanagedTank(spawnParams);
+
+                var blockman = tech.blockman;
+
+                foreach (var b in Blocks)
+                {
+                    var block = blockman.GetBlockAtPosition(b.Position);
+                    block.trans.localPosition = b.localPosition;
+                    block.trans.localEulerAngles = b.localEulerAngles;
+                    block.trans.localScale = b.localScale;
+                }
+
+                /*Blocks.Add(root);
+
+                var blocks = tech.blockman.GetLowestBlocks();
+                foreach (var b in blocks)
+                {
+                    var jb = Blocks.First(bb => bb.Position == b.cachedLocalPosition);
+                    b.trans.localEulerAngles = jb.localEulerAngles;
+                    b.trans.localPosition = jb.localPosition;
+                    b.trans.localScale = jb.localScale;
+                }*/
 
                 return tech;
             }
