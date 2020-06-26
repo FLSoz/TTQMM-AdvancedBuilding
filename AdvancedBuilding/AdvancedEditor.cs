@@ -52,13 +52,13 @@ namespace Exund.AdvancedBuilding
         internal static ModuleOffgridStore module;
         private Vector3 position;
         private Vector3 rotation;
-        private Vector3 scale;
+        private Vector3 scale = Vector3.one;
 
         List<Transform> targets = new List<Transform>();
 
         private void Update()
         {
-            if(block && !block.gameObject.activeInHierarchy)
+            if(block && !block.gameObject.activeInHierarchy || module && !module.block.gameObject.activeInHierarchy)
             {
                 Clean();
             }
