@@ -15,11 +15,16 @@ namespace Exund.AdvancedBuilding
 
         private string path = "";
 
+        private static readonly string folder_path = Path.GetFullPath(AdvancedBuildingMod.PreciseSnapshotsFolder);
+
+        public static string[] files = new string[0]; 
+
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.O) && Input.GetKey(KeyCode.LeftAlt) && Singleton.playerTank)
             {
-                visible = true;
+                files = Directory.GetFiles(folder_path, "*.json");
+                visible = files.Length > 0;
             }
             useGUILayout = visible;
         }
@@ -34,7 +39,7 @@ namespace Exund.AdvancedBuilding
         {
 
             scrollPos = GUILayout.BeginScrollView(scrollPos);
-            foreach (var tech in Directory.GetFiles(Path.GetFullPath(AdvancedBuildingMod.PreciseSnapshotsFolder),"*.json"))
+            foreach (var tech in files)
             {
                 if (GUILayout.Button(tech,new GUIStyle(GUI.skin.button) { richText = true, alignment = TextAnchor.MiddleLeft }))
                 {

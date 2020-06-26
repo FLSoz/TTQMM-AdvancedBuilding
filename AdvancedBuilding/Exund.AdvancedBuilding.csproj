@@ -41,6 +41,10 @@
       <HintPath>..\..\..\Program Files\Steam\steamapps\common\TerraTech\QMods\0Nuterra.NativeOptions\0Nuterra.NativeOptions.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="AcModHelper.Config">
+      <HintPath>..\..\..\Program Files\Steam\steamapps\common\TerraTech\QMods\ModHelper.Config\AcModHelper.Config.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\Program Files\Steam\steamapps\common\TerraTech\TerraTechWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
@@ -57,6 +61,10 @@
     <Reference Include="System.Core" />
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\Program Files\Steam\steamapps\common\TerraTech\TerraTechWin64_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>..\..\..\Program Files\Steam\steamapps\common\TerraTech\TerraTechWin64_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
@@ -91,28 +99,72 @@
   <ItemGroup>
     <Compile Include="AdvancedBuildingMod.cs" />
     <Compile Include="ModuleOffgridStore.cs" />
-    <Compile Include="BlocksInfo.cs" />
+    <Compile Include="AdvancedEditor.cs" />
     <Compile Include="LoadWindow.cs" />
     <Compile Include="PreciseSnapshot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RotateBlocks.cs" />
-    <Compile Include="SaveWindow.cs" />
-    <Compile Include="ScaleBlocks.cs" />
-    <Compile Include="TranslateBlocks.cs" />
+    <Compile Include="RuntimeGizmos\Custom\TransformGizmoCustomGizmo.cs" />
+    <Compile Include="RuntimeGizmos\Helpers\ExtMathf.cs" />
+    <Compile Include="RuntimeGizmos\Helpers\ExtTransform.cs" />
+    <Compile Include="RuntimeGizmos\Helpers\ExtTransformType.cs" />
+    <Compile Include="RuntimeGizmos\Helpers\ExtVector3.cs" />
+    <Compile Include="RuntimeGizmos\Helpers\Geometry.cs" />
+    <Compile Include="RuntimeGizmos\Objects\AxisInfo.cs" />
+    <Compile Include="RuntimeGizmos\Objects\AxisVectors.cs" />
+    <Compile Include="RuntimeGizmos\Objects\Commands\SelectCommand.cs" />
+    <Compile Include="RuntimeGizmos\Objects\Commands\TransformCommand.cs" />
+    <Compile Include="RuntimeGizmos\Objects\Enums.cs" />
+    <Compile Include="RuntimeGizmos\Objects\IntersectPoints.cs" />
+    <Compile Include="RuntimeGizmos\Objects\Square.cs" />
+    <Compile Include="RuntimeGizmos\Objects\TargetInfo.cs" />
+    <Compile Include="RuntimeGizmos\TransformGizmo.cs" />
+    <Compile Include="RuntimeGizmos\UndoRedo\CommandGroup.cs" />
+    <Compile Include="RuntimeGizmos\UndoRedo\DropoutStack.cs" />
+    <Compile Include="RuntimeGizmos\UndoRedo\ICommand.cs" />
+    <Compile Include="RuntimeGizmos\UndoRedo\UndoRedo.cs" />
+    <Compile Include="RuntimeGizmos\UndoRedo\UndoRedoManager.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="hadamard_superposer.obj">
+    <Content Include="Assets\hadamard_superposer.obj">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </Content>
+    <Content Include="Assets\runtimegizmos">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\runtimegizmos.manifest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="mod.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="hadamard_superposer.png">
+    <Content Include="Assets\center_tool.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\global_tool.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\hadamard_superposer.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\local_tool.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\move_tool.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\pivot_tool.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\rotate_tool.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\scale_tool.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>del *.pdb
