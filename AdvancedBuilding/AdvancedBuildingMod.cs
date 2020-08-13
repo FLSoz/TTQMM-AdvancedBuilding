@@ -42,6 +42,15 @@ namespace Exund.AdvancedBuilding
                 config.TryGetConfig<float>("position_step", ref AdvancedEditor.position_step);
                 config.TryGetConfig<float>("rotation_step", ref AdvancedEditor.rotation_step);
                 config.TryGetConfig<float>("scale_step", ref AdvancedEditor.scale_step);
+                config.TryGetConfig<bool>("colorToolsKeycode", ref AdvancedEditor.openInventory);
+
+                OptionToggle openInventoryToggle = new OptionToggle("Block Picker - Automatically open the inventory when picking a block", "Advanced Building", AdvancedEditor.openInventory);
+                openInventoryToggle.onValueSaved.AddListener(() =>
+                {
+                    AdvancedEditor.openInventory = openInventoryToggle.SavedValue;
+                    config["colorToolsKeycode"] = AdvancedEditor.openInventory;
+                    config.WriteConfigJsonFile();
+                });
 
                 if (!Directory.Exists(PreciseSnapshotsFolder))
                 {
@@ -125,6 +134,18 @@ namespace Exund.AdvancedBuilding
                         }
                     }*/
                     return codes;
+                }
+            }
+
+            [HarmonyPatch(typeof(ManPointer), "OnMouse")]
+            private static class ManControllerTechBuilder_SpawnNewPaintingBlock
+            {
+                static void Prefix()
+                {
+                    if (Input.GetMouseButton(0) && Input.GetKey(KeyCode.LeftShift))
+                    {
+                        ManPointer.inst.ChangeBuildMode((ManPointer.BuildingMode)10);
+                    }
                 }
             }
         }

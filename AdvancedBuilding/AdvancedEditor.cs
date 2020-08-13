@@ -56,6 +56,8 @@ namespace Exund.AdvancedBuilding
 
         List<Transform> targets = new List<Transform>();
 
+        internal static bool openInventory = false;
+
         private void Update()
         {
             if(block && !block.gameObject.activeInHierarchy || module && !module.block.gameObject.activeInHierarchy)
@@ -105,6 +107,23 @@ namespace Exund.AdvancedBuilding
                 }
 
                 useGUILayout = block;
+            }
+
+            if(Input.GetMouseButtonDown(0) && Input.GetKey(KeyCode.LeftShift))
+            {
+                UIPaletteBlockSelect palette = Singleton.Manager<ManHUD>.inst.GetHudElement(ManHUD.HUDElementType.BlockPalette) as UIPaletteBlockSelect;
+
+                if (!palette.IsExpanded && openInventory) palette.Expand(new UIShopBlockSelect.ExpandContext() { expandReason = UIShopBlockSelect.ExpandReason.Button });
+                
+                if (palette.IsExpanded)
+                {                    
+                    var temp_block = Singleton.Manager<ManPointer>.inst.targetVisible?.block;
+                    if (temp_block)
+                    {
+                        palette.TrySelectBlockType(temp_block.BlockType);
+                        Singleton.Manager<ManPointer>.inst.ChangeBuildMode(ManPointer.BuildingMode.PaintBlock);
+                    }
+                }
             }
         }
 
@@ -371,8 +390,8 @@ namespace Exund.AdvancedBuilding
         private void SaveConfig()
         {
             AdvancedBuildingMod.config["position_step"] = position_step;
-            AdvancedBuildingMod.config["position_step"] = position_step;
-            AdvancedBuildingMod.config["position_step"] = position_step;
+            AdvancedBuildingMod.config["rotation_step"] = rotation_step;
+            AdvancedBuildingMod.config["scale_step"] = scale_step;
             AdvancedBuildingMod.config.WriteConfigJsonFile();
         }
 
