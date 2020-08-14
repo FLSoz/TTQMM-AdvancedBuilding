@@ -115,9 +115,23 @@ namespace Exund.AdvancedBuilding
             if(Input.GetMouseButtonDown(0) && Input.GetKey(AdvancedEditor.block_picker_key))
             {
                 UIPaletteBlockSelect palette = Singleton.Manager<ManHUD>.inst.GetHudElement(ManHUD.HUDElementType.BlockPalette) as UIPaletteBlockSelect;
+                //var blockMenuSelection = Singleton.Manager<ManHUD>.inst.GetHudElement(ManHUD.HUDElementType.BlockMenuSelection) as UIBlockMenuSelection;
+                if (!palette.IsExpanded && open_inventory)
+                {
+                    var blockMenuSelection = Singleton.Manager<ManHUD>.inst.GetHudElement(ManHUD.HUDElementType.BlockMenuSelection) as UIBlockMenuSelection;
+                    blockMenuSelection.Hide(new UIBlockMenuSelection.Context() { targetMode = UIBlockMenuSelection.ModeMask.BlockPaletteAndTechs });
+                    blockMenuSelection.Show(new UIBlockMenuSelection.Context() { targetMode = UIBlockMenuSelection.ModeMask.BlockPalette });
+                    palette.Expand(new UIShopBlockSelect.ExpandContext() { expandReason = UIShopBlockSelect.ExpandReason.Button });
 
-                if (!palette.IsExpanded && open_inventory) palette.Expand(new UIShopBlockSelect.ExpandContext() { expandReason = UIShopBlockSelect.ExpandReason.Button });
+                    try
+                    {
+                        Singleton.Manager<ManHUD>.inst.HideHudElement(ManHUD.HUDElementType.TechLoader);
+                    }
+                    catch { }
+                }
+
                 
+
                 if (palette.IsExpanded)
                 {                    
                     var temp_block = Singleton.Manager<ManPointer>.inst.targetVisible?.block;
@@ -126,9 +140,9 @@ namespace Exund.AdvancedBuilding
                         var grid = m_Grid.GetValue(palette) as UIBlockSelectGrid;
                         grid.PreventSelection = false;
                         palette.TrySelectBlockType(temp_block.BlockType);
-                        Singleton.Manager<ManPointer>.inst.ChangeBuildMode(ManPointer.BuildingMode.PaintBlock);
                     }
                 }
+                Singleton.Manager<ManPointer>.inst.ChangeBuildMode(ManPointer.BuildingMode.PaintBlock);
             }
         }
 
