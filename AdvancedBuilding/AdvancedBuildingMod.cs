@@ -42,13 +42,23 @@ namespace Exund.AdvancedBuilding
                 config.TryGetConfig<float>("position_step", ref AdvancedEditor.position_step);
                 config.TryGetConfig<float>("rotation_step", ref AdvancedEditor.rotation_step);
                 config.TryGetConfig<float>("scale_step", ref AdvancedEditor.scale_step);
-                config.TryGetConfig<bool>("colorToolsKeycode", ref AdvancedEditor.openInventory);
+                config.TryGetConfig<bool>("open_inventory", ref AdvancedEditor.open_inventory);
+                var key = (int)AdvancedEditor.block_picker_key;
+                config.TryGetConfig<int>("block_picker_key", ref key);
+                AdvancedEditor.block_picker_key = (KeyCode)key;
 
-                OptionToggle openInventoryToggle = new OptionToggle("Block Picker - Automatically open the inventory when picking a block", "Advanced Building", AdvancedEditor.openInventory);
+                OptionKey blockPickerKey = new OptionKey("Block Picker activation key", "Advanced Building", AdvancedEditor.block_picker_key);
+                blockPickerKey.onValueSaved.AddListener(() =>
+                {
+                    AdvancedEditor.block_picker_key = blockPickerKey.SavedValue;
+                    config["block_picker_key"] = (int)AdvancedEditor.block_picker_key;
+                });
+
+                OptionToggle openInventoryToggle = new OptionToggle("Block Picker - Automatically open the inventory when picking a block", "Advanced Building", AdvancedEditor.open_inventory);
                 openInventoryToggle.onValueSaved.AddListener(() =>
                 {
-                    AdvancedEditor.openInventory = openInventoryToggle.SavedValue;
-                    config["colorToolsKeycode"] = AdvancedEditor.openInventory;
+                    AdvancedEditor.open_inventory = openInventoryToggle.SavedValue;
+                    config["open_inventory"] = AdvancedEditor.open_inventory;
                     config.WriteConfigJsonFile();
                 });
 
@@ -142,7 +152,7 @@ namespace Exund.AdvancedBuilding
             {
                 static void Prefix()
                 {
-                    if (Input.GetMouseButton(0) && Input.GetKey(KeyCode.LeftShift))
+                    if (Input.GetMouseButton(0) && Input.GetKey(AdvancedEditor.block_picker_key))
                     {
                         ManPointer.inst.ChangeBuildMode((ManPointer.BuildingMode)10);
                     }

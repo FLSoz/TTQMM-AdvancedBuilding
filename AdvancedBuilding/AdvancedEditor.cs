@@ -56,7 +56,10 @@ namespace Exund.AdvancedBuilding
 
         List<Transform> targets = new List<Transform>();
 
-        internal static bool openInventory = false;
+        internal static KeyCode block_picker_key = KeyCode.LeftShift;
+        internal static bool open_inventory = false;
+        static FieldInfo m_PreLockSelection = typeof(UIPaletteBlockSelect).GetField("m_PreLockSelection", BindingFlags.NonPublic | BindingFlags.Instance);
+        static FieldInfo m_Grid = typeof(UIPaletteBlockSelect).GetField("m_Grid", BindingFlags.NonPublic | BindingFlags.Instance);
 
         private void Update()
         {
@@ -109,17 +112,19 @@ namespace Exund.AdvancedBuilding
                 useGUILayout = block;
             }
 
-            if(Input.GetMouseButtonDown(0) && Input.GetKey(KeyCode.LeftShift))
+            if(Input.GetMouseButtonDown(0) && Input.GetKey(AdvancedEditor.block_picker_key))
             {
                 UIPaletteBlockSelect palette = Singleton.Manager<ManHUD>.inst.GetHudElement(ManHUD.HUDElementType.BlockPalette) as UIPaletteBlockSelect;
 
-                if (!palette.IsExpanded && openInventory) palette.Expand(new UIShopBlockSelect.ExpandContext() { expandReason = UIShopBlockSelect.ExpandReason.Button });
+                if (!palette.IsExpanded && open_inventory) palette.Expand(new UIShopBlockSelect.ExpandContext() { expandReason = UIShopBlockSelect.ExpandReason.Button });
                 
                 if (palette.IsExpanded)
                 {                    
                     var temp_block = Singleton.Manager<ManPointer>.inst.targetVisible?.block;
                     if (temp_block)
                     {
+                        var grid = m_Grid.GetValue(palette) as UIBlockSelectGrid;
+                        grid.PreventSelection = false;
                         palette.TrySelectBlockType(temp_block.BlockType);
                         Singleton.Manager<ManPointer>.inst.ChangeBuildMode(ManPointer.BuildingMode.PaintBlock);
                     }
