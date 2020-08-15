@@ -112,10 +112,9 @@ namespace Exund.AdvancedBuilding
                 useGUILayout = block;
             }
 
-            if(Input.GetMouseButtonDown(0) && Input.GetKey(AdvancedEditor.block_picker_key))
+            if(Input.GetMouseButtonDown(0) && Input.GetKey(AdvancedEditor.block_picker_key) && ManPlayer.inst.PaletteUnlocked)
             {
                 UIPaletteBlockSelect palette = Singleton.Manager<ManHUD>.inst.GetHudElement(ManHUD.HUDElementType.BlockPalette) as UIPaletteBlockSelect;
-                //var blockMenuSelection = Singleton.Manager<ManHUD>.inst.GetHudElement(ManHUD.HUDElementType.BlockMenuSelection) as UIBlockMenuSelection;
                 if (!palette.IsExpanded && open_inventory)
                 {
                     var blockMenuSelection = Singleton.Manager<ManHUD>.inst.GetHudElement(ManHUD.HUDElementType.BlockMenuSelection) as UIBlockMenuSelection;
@@ -129,8 +128,6 @@ namespace Exund.AdvancedBuilding
                     }
                     catch { }
                 }
-
-                
 
                 if (palette.IsExpanded)
                 {                    

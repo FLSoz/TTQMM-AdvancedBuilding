@@ -152,7 +152,7 @@ namespace Exund.AdvancedBuilding
             {
                 static void Prefix()
                 {
-                    if (Input.GetMouseButton(0) && Input.GetKey(AdvancedEditor.block_picker_key))
+                    if (Input.GetMouseButton(0) && Input.GetKey(AdvancedEditor.block_picker_key) && ManPlayer.inst.PaletteUnlocked)
                     {
                         ManPointer.inst.ChangeBuildMode((ManPointer.BuildingMode)10);
                     }
