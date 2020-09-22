@@ -58,8 +58,15 @@ namespace Exund.AdvancedBuilding
 
         internal static KeyCode block_picker_key = KeyCode.LeftShift;
         internal static bool open_inventory = false;
-        static FieldInfo m_PreLockSelection = typeof(UIPaletteBlockSelect).GetField("m_PreLockSelection", BindingFlags.NonPublic | BindingFlags.Instance);
-        static FieldInfo m_Grid = typeof(UIPaletteBlockSelect).GetField("m_Grid", BindingFlags.NonPublic | BindingFlags.Instance);
+        internal static bool global_filters = true;
+
+        static BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
+        static Type T_UIPaletteBlockSelect = typeof(UIPaletteBlockSelect);
+        static FieldInfo m_Grid = T_UIPaletteBlockSelect.GetField("m_Grid", flags);
+        static FieldInfo m_CategoryToggles = T_UIPaletteBlockSelect.GetField("m_CategoryToggles", flags);
+        static FieldInfo m_CorpToggles = T_UIPaletteBlockSelect.GetField("m_CorpToggles", flags);
+        static FieldInfo m_Controller = typeof(UICorpToggles).GetField("m_Controller", flags);
+
 
         private void Update()
         {
@@ -136,6 +143,23 @@ namespace Exund.AdvancedBuilding
                     {
                         var grid = m_Grid.GetValue(palette) as UIBlockSelectGrid;
                         grid.PreventSelection = false;
+
+                        var catToggles = m_CategoryToggles.GetValue(palette) as UICategoryToggles;
+                        var corpToggles = m_CorpToggles.GetValue(palette) as UICorpToggles;
+                        var controller = m_Controller.GetValue(corpToggles) as UITogglesController;
+
+                        if(global_filters)
+                        {
+                            catToggles.ToggleAllOn();
+                            corpToggles.ToggleAllOn();
+                        } else {
+                            catToggles.SetToggleSelected((int)temp_block.BlockCategory, true);
+                            controller.SetToggleSelected((int)Singleton.Manager<ManSpawn>.inst.GetCorporation(temp_block.BlockType), true);
+                        }
+
+                        grid.Repopulate();
+
+
                         palette.TrySelectBlockType(temp_block.BlockType);
                     }
                 }

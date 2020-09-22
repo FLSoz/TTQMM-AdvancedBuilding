@@ -43,6 +43,7 @@ namespace Exund.AdvancedBuilding
                 config.TryGetConfig<float>("rotation_step", ref AdvancedEditor.rotation_step);
                 config.TryGetConfig<float>("scale_step", ref AdvancedEditor.scale_step);
                 config.TryGetConfig<bool>("open_inventory", ref AdvancedEditor.open_inventory);
+                config.TryGetConfig<bool>("global_filters", ref AdvancedEditor.global_filters);
                 var key = (int)AdvancedEditor.block_picker_key;
                 config.TryGetConfig<int>("block_picker_key", ref key);
                 AdvancedEditor.block_picker_key = (KeyCode)key;
@@ -52,6 +53,13 @@ namespace Exund.AdvancedBuilding
                 {
                     AdvancedEditor.block_picker_key = blockPickerKey.SavedValue;
                     config["block_picker_key"] = (int)AdvancedEditor.block_picker_key;
+                });
+
+                OptionToggle globalFilterToggle = new OptionToggle("Block Picker - Use global filters", "Advanced Building", AdvancedEditor.global_filters);
+                globalFilterToggle.onValueSaved.AddListener(() =>
+                {
+                    AdvancedEditor.global_filters = globalFilterToggle.SavedValue;
+                    config["global_filters"] = AdvancedEditor.global_filters;
                 });
 
                 OptionToggle openInventoryToggle = new OptionToggle("Block Picker - Automatically open the inventory when picking a block", "Advanced Building", AdvancedEditor.open_inventory);
