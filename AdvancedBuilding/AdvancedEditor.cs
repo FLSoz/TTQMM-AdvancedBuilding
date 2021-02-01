@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.IO;
 using System.Reflection;
@@ -61,7 +61,7 @@ namespace Exund.AdvancedBuilding
         internal static bool global_filters = true;
 
         static BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
-        static Type T_UIPaletteBlockSelect = typeof(UIPaletteBlockSelect);
+        public static Type T_UIPaletteBlockSelect = typeof(UIPaletteBlockSelect);
         static FieldInfo m_Grid = T_UIPaletteBlockSelect.GetField("m_Grid", flags);
         static FieldInfo m_CategoryToggles = T_UIPaletteBlockSelect.GetField("m_CategoryToggles", flags);
         static FieldInfo m_CorpToggles = T_UIPaletteBlockSelect.GetField("m_CorpToggles", flags);
@@ -70,7 +70,9 @@ namespace Exund.AdvancedBuilding
 
         private void Update()
         {
-            if(block && !block.gameObject.activeInHierarchy || module && !module.block.gameObject.activeInHierarchy)
+            PaletteTextFilter.HandleInputFieldFocus();
+
+            if (block && !block.gameObject.activeInHierarchy || module && !module.block.gameObject.activeInHierarchy)
             {
                 Clean();
             }

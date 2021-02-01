@@ -101,6 +101,7 @@
     <Compile Include="ModuleOffgridStore.cs" />
     <Compile Include="AdvancedEditor.cs" />
     <Compile Include="LoadWindow.cs" />
+    <Compile Include="PaletteTextFilter.cs" />
     <Compile Include="PreciseSnapshot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RuntimeGizmos\Custom\TransformGizmoCustomGizmo.cs" />

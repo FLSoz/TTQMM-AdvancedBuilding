@@ -48,25 +48,36 @@ namespace Exund.AdvancedBuilding
                 config.TryGetConfig<int>("block_picker_key", ref key);
                 AdvancedEditor.block_picker_key = (KeyCode)key;
 
-                OptionKey blockPickerKey = new OptionKey("Block Picker activation key", "Advanced Building", AdvancedEditor.block_picker_key);
+                config.TryGetConfig<bool>("clearOnCollapse", ref PaletteTextFilter.clearOnCollapse);
+
+
+                string modName = "Advanced Building";
+                OptionKey blockPickerKey = new OptionKey("Block Picker activation key", modName, AdvancedEditor.block_picker_key);
                 blockPickerKey.onValueSaved.AddListener(() =>
                 {
                     AdvancedEditor.block_picker_key = blockPickerKey.SavedValue;
                     config["block_picker_key"] = (int)AdvancedEditor.block_picker_key;
                 });
 
-                OptionToggle globalFilterToggle = new OptionToggle("Block Picker - Use global filters", "Advanced Building", AdvancedEditor.global_filters);
+                OptionToggle globalFilterToggle = new OptionToggle("Block Picker - Use global filters", modName, AdvancedEditor.global_filters);
                 globalFilterToggle.onValueSaved.AddListener(() =>
                 {
                     AdvancedEditor.global_filters = globalFilterToggle.SavedValue;
                     config["global_filters"] = AdvancedEditor.global_filters;
                 });
 
-                OptionToggle openInventoryToggle = new OptionToggle("Block Picker - Automatically open the inventory when picking a block", "Advanced Building", AdvancedEditor.open_inventory);
+                OptionToggle openInventoryToggle = new OptionToggle("Block Picker - Automatically open the inventory when picking a block", modName, AdvancedEditor.open_inventory);
                 openInventoryToggle.onValueSaved.AddListener(() =>
                 {
                     AdvancedEditor.open_inventory = openInventoryToggle.SavedValue;
                     config["open_inventory"] = AdvancedEditor.open_inventory;
+                });
+
+                OptionToggle clearOnCollapse = new OptionToggle("Block Search - Clear filter when closing inventory", modName, PaletteTextFilter.clearOnCollapse);
+                clearOnCollapse.onValueSaved.AddListener(() =>
+                {
+                    PaletteTextFilter.clearOnCollapse = clearOnCollapse.SavedValue;
+                    config["clearOnCollapse"] = PaletteTextFilter.clearOnCollapse;
                     config.WriteConfigJsonFile();
                 });
 
@@ -164,6 +175,48 @@ namespace Exund.AdvancedBuilding
                     {
                         ManPointer.inst.ChangeBuildMode((ManPointer.BuildingMode)10);
                     }
+                }
+            }
+
+            private static class UIPaletteBlockSelect_Patches
+            {
+                [HarmonyPatch(typeof(UIPaletteBlockSelect), "BlockFilterFunction")]
+                private static class BlockFilterFunction
+                {
+                    static void Postfix(ref BlockTypes blockType, ref bool __result)
+                    {
+                        if(__result)
+                        {
+                            __result = PaletteTextFilter.BlockFilterFunction(blockType);
+                        }
+                    }
+                }
+
+                [HarmonyPatch(typeof(UIPaletteBlockSelect), "OnPool")]
+                private static class OnPool
+                {
+                    static void Postfix(ref UIPaletteBlockSelect __instance)
+                    {
+                        PaletteTextFilter.Init(__instance);
+                    }
+                }
+
+                [HarmonyPatch(typeof(UIPaletteBlockSelect), "Collapse")]
+                private static class Collapse
+                {
+                    static void Postfix(ref bool __result)
+                    {
+                        PaletteTextFilter.OnPaletteCollapse(__result);
+                    }
+                }
+            }
+
+            [HarmonyPatch(typeof(ManPauseGame), "TogglePauseMenu")]
+            private static class ManPauseGame_TogglePauseMenu
+            {
+                static bool Prefix()
+                {
+                    return PaletteTextFilter.PreventPause();
                 }
             }
         }
