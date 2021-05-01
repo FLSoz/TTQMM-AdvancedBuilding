@@ -27,13 +27,20 @@ namespace Exund.AdvancedBuilding
             var harmony = HarmonyInstance.Create("exund.advancedbuilding");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
 
-            assetBundle = AssetBundle.LoadFromFile(asm_path + "Assets/runtimegizmos");
+            assetBundle = AssetBundle.LoadFromFile(asm_path + "Assets/advancedbuilding");
 
             try
             {
                 _holder = new GameObject();
                 _holder.AddComponent<AdvancedEditor>();
-                _holder.AddComponent<LoadWindow>();
+                _holder.AddComponent<BlockPicker>();
+
+                if (Directory.Exists(PreciseSnapshotsFolder))
+                {
+                    _holder.AddComponent<LoadWindow>();
+                }
+
+
                 UnityEngine.Object.DontDestroyOnLoad(_holder);
 
                 transformGizmo = Singleton.cameraTrans.gameObject.AddComponent<RuntimeGizmos.TransformGizmo>();
@@ -42,35 +49,40 @@ namespace Exund.AdvancedBuilding
                 config.TryGetConfig<float>("position_step", ref AdvancedEditor.position_step);
                 config.TryGetConfig<float>("rotation_step", ref AdvancedEditor.rotation_step);
                 config.TryGetConfig<float>("scale_step", ref AdvancedEditor.scale_step);
-                config.TryGetConfig<bool>("open_inventory", ref AdvancedEditor.open_inventory);
-                config.TryGetConfig<bool>("global_filters", ref AdvancedEditor.global_filters);
-                var key = (int)AdvancedEditor.block_picker_key;
+
+                config.TryGetConfig<bool>("open_inventory", ref BlockPicker.open_inventory);
+                config.TryGetConfig<bool>("global_filters", ref BlockPicker.global_filters);
+                var key = (int)BlockPicker.block_picker_key;
                 config.TryGetConfig<int>("block_picker_key", ref key);
-                AdvancedEditor.block_picker_key = (KeyCode)key;
+                BlockPicker.block_picker_key = (KeyCode)key;
 
                 config.TryGetConfig<bool>("clearOnCollapse", ref PaletteTextFilter.clearOnCollapse);
 
+                var key2 = (int)PhysicsInfo.centers_key;
+                config.TryGetConfig<int>("centers_key", ref key2);
+                PhysicsInfo.centers_key = (KeyCode)key2;
+
 
                 string modName = "Advanced Building";
-                OptionKey blockPickerKey = new OptionKey("Block Picker activation key", modName, AdvancedEditor.block_picker_key);
+                OptionKey blockPickerKey = new OptionKey("Block Picker activation key", modName, BlockPicker.block_picker_key);
                 blockPickerKey.onValueSaved.AddListener(() =>
                 {
-                    AdvancedEditor.block_picker_key = blockPickerKey.SavedValue;
-                    config["block_picker_key"] = (int)AdvancedEditor.block_picker_key;
+                    BlockPicker.block_picker_key = blockPickerKey.SavedValue;
+                    config["block_picker_key"] = (int)BlockPicker.block_picker_key;
                 });
 
-                OptionToggle globalFilterToggle = new OptionToggle("Block Picker - Use global filters", modName, AdvancedEditor.global_filters);
+                OptionToggle globalFilterToggle = new OptionToggle("Block Picker - Use global filters", modName, BlockPicker.global_filters);
                 globalFilterToggle.onValueSaved.AddListener(() =>
                 {
-                    AdvancedEditor.global_filters = globalFilterToggle.SavedValue;
-                    config["global_filters"] = AdvancedEditor.global_filters;
+                    BlockPicker.global_filters = globalFilterToggle.SavedValue;
+                    config["global_filters"] = BlockPicker.global_filters;
                 });
 
-                OptionToggle openInventoryToggle = new OptionToggle("Block Picker - Automatically open the inventory when picking a block", modName, AdvancedEditor.open_inventory);
+                OptionToggle openInventoryToggle = new OptionToggle("Block Picker - Automatically open the inventory when picking a block", modName, BlockPicker.open_inventory);
                 openInventoryToggle.onValueSaved.AddListener(() =>
                 {
-                    AdvancedEditor.open_inventory = openInventoryToggle.SavedValue;
-                    config["open_inventory"] = AdvancedEditor.open_inventory;
+                    BlockPicker.open_inventory = openInventoryToggle.SavedValue;
+                    config["open_inventory"] = BlockPicker.open_inventory;
                 });
 
                 OptionToggle clearOnCollapse = new OptionToggle("Block Search - Clear filter when closing inventory", modName, PaletteTextFilter.clearOnCollapse);
@@ -78,13 +90,20 @@ namespace Exund.AdvancedBuilding
                 {
                     PaletteTextFilter.clearOnCollapse = clearOnCollapse.SavedValue;
                     config["clearOnCollapse"] = PaletteTextFilter.clearOnCollapse;
-                    config.WriteConfigJsonFile();
                 });
 
-                if (!Directory.Exists(PreciseSnapshotsFolder))
+                OptionKey centersKey = new OptionKey("Open centers display menu (Ctrl + ?)", modName, PhysicsInfo.centers_key);
+                centersKey.onValueSaved.AddListener(() =>
                 {
-                    Directory.CreateDirectory(PreciseSnapshotsFolder);
-                }
+                    PhysicsInfo.centers_key = centersKey.SavedValue;
+                    config["centers_key"] = (int)PhysicsInfo.centers_key;
+
+                });
+
+                NativeOptionsMod.onOptionsSaved.AddListener(() =>
+                {
+                    config.WriteConfigJsonFile();
+                });
 
                 new BlockPrefabBuilder(BlockTypes.GSOBlock_111, true)
                     .SetBlockID(7020)
@@ -102,8 +121,57 @@ namespace Exund.AdvancedBuilding
                     .AddComponent<ModuleOffgridStore>()
                     .RegisterLater();
 
-            } 
-            catch(Exception e)
+                {
+                    var ontop = new Material(assetBundle.LoadAsset<Shader>("OnTop"));
+                    var go = new GameObject();
+                    var mr = go.AddComponent<MeshRenderer>();
+                    mr.material = ontop;
+                    mr.material.mainTexture = GameObjectJSON.ImageFromFile(asm_path + "Assets/CO.png");
+                    mr.material.mainTexture.filterMode = FilterMode.Point;
+                    var mf = go.AddComponent<MeshFilter>();
+                    mf.sharedMesh = mf.mesh = GameObjectJSON.MeshFromFile(asm_path + "Assets/CO.obj");
+
+                    var line = new GameObject();
+                    var lr = line.AddComponent<LineRenderer>();
+                    lr.startWidth = 0.5f;
+                    lr.endWidth = 0;
+                    lr.SetPositions(new Vector3[] { Vector3.zero, Vector3.zero });
+                    lr.useWorldSpace = true;
+                    lr.material = ontop;
+                    line.transform.SetParent(go.transform, false);
+
+                    go.SetActive(false);
+                    go.transform.SetParent(_holder.transform, false);
+
+                    PhysicsInfo.COM = GameObject.Instantiate(go);
+                    var commat = PhysicsInfo.COM.GetComponent<MeshRenderer>().material;
+                    commat.color = Color.yellow;
+                    commat.renderQueue = 1;
+                    PhysicsInfo.COM.GetComponentInChildren<LineRenderer>().enabled = false;
+
+                    PhysicsInfo.COT = GameObject.Instantiate(go);
+                    PhysicsInfo.COT.transform.localScale *= 0.75f;
+                    var cotmat = PhysicsInfo.COT.GetComponent<MeshRenderer>().material;
+                    cotmat.color = Color.magenta;
+                    cotmat.renderQueue = 3;
+                    var COTlr = PhysicsInfo.COT.GetComponentInChildren<LineRenderer>();
+                    COTlr.material.renderQueue = 2;
+                    COTlr.startColor = COTlr.endColor = Color.magenta;
+
+                    PhysicsInfo.COL = GameObject.Instantiate(go);
+                    PhysicsInfo.COL.transform.localScale *= 0.5625f;
+                    var colmat = PhysicsInfo.COL.GetComponent<MeshRenderer>().material;
+                    colmat.color = Color.cyan;
+                    colmat.renderQueue = 5;
+                    var COLlr = PhysicsInfo.COL.GetComponentInChildren<LineRenderer>();
+                    COLlr.startColor = COLlr.endColor = Color.cyan;
+                    COLlr.material.renderQueue = 4;
+                }
+
+                _holder.AddComponent<PhysicsInfo>();
+
+            }
+            catch (Exception e)
             {
                 Console.WriteLine(e);
             }
@@ -129,8 +197,10 @@ namespace Exund.AdvancedBuilding
 
             GUILayout.BeginHorizontal(h);
             float.TryParse(GUILayout.TextField(value.ToString(), h), out float val);
-            if (GUILayout.Button("+", w, h)) val += interval;
-            if (GUILayout.Button("-", w, h)) val -= interval;
+            if (GUILayout.Button("+", w, h))
+                val += interval;
+            if (GUILayout.Button("-", w, h))
+                val -= interval;
             GUILayout.EndHorizontal();
             val = (float)Math.Round(val, 6);
             if (val != value)
@@ -171,7 +241,7 @@ namespace Exund.AdvancedBuilding
             {
                 static void Prefix()
                 {
-                    if (Input.GetMouseButton(0) && Input.GetKey(AdvancedEditor.block_picker_key) && ManPlayer.inst.PaletteUnlocked)
+                    if (Input.GetMouseButton(0) && Input.GetKey(BlockPicker.block_picker_key) && ManPlayer.inst.PaletteUnlocked)
                     {
                         ManPointer.inst.ChangeBuildMode((ManPointer.BuildingMode)10);
                     }
@@ -185,7 +255,7 @@ namespace Exund.AdvancedBuilding
                 {
                     static void Postfix(ref BlockTypes blockType, ref bool __result)
                     {
-                        if(__result)
+                        if (__result)
                         {
                             __result = PaletteTextFilter.BlockFilterFunction(blockType);
                         }

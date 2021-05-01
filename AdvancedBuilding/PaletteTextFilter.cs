@@ -8,7 +8,7 @@ namespace Exund.AdvancedBuilding
 {
     class PaletteTextFilter
     {
-        static readonly FieldInfo m_UpdateGrid = AdvancedEditor.T_UIPaletteBlockSelect.GetField("m_UpdateGrid", BindingFlags.NonPublic | BindingFlags.Instance);
+        static readonly FieldInfo m_UpdateGrid = BlockPicker.T_UIPaletteBlockSelect.GetField("m_UpdateGrid", BindingFlags.NonPublic | BindingFlags.Instance);
         public static MethodInfo SetUIInputMode = typeof(ManInput).GetMethod("SetUIInputMode", BindingFlags.NonPublic | BindingFlags.Instance);
 
         public static readonly Font ExoRegular = Resources.FindObjectsOfTypeAll<Font>().First(f => f.name == "Exo-Regular");

@@ -98,6 +98,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AdvancedBuildingMod.cs" />
+    <Compile Include="BlockPicker.cs" />
+    <Compile Include="PhysicsInfo.cs" />
     <Compile Include="ModuleOffgridStore.cs" />
     <Compile Include="AdvancedEditor.cs" />
     <Compile Include="LoadWindow.cs" />
@@ -126,13 +128,19 @@
     <Compile Include="RuntimeGizmos\UndoRedo\UndoRedoManager.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\CO.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\hadamard_superposer.obj">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\runtimegizmos">
+    <Content Include="Assets\CO.obj">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\runtimegizmos.manifest">
+    <Content Include="Assets\advancedbuilding">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\advancedbuilding.manifest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="mod.json">
