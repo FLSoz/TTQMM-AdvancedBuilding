@@ -92,7 +92,7 @@ namespace Exund.AdvancedBuilding
                     config["clearOnCollapse"] = PaletteTextFilter.clearOnCollapse;
                 });
 
-                OptionKey centersKey = new OptionKey("Open centers display menu (Ctrl + ?)", modName, PhysicsInfo.centers_key);
+                OptionKey centersKey = new OptionKey("Open physics info menu (Ctrl + ?)", modName, PhysicsInfo.centers_key);
                 centersKey.onValueSaved.AddListener(() =>
                 {
                     PhysicsInfo.centers_key = centersKey.SavedValue;
@@ -138,6 +138,7 @@ namespace Exund.AdvancedBuilding
                     lr.SetPositions(new Vector3[] { Vector3.zero, Vector3.zero });
                     lr.useWorldSpace = true;
                     lr.material = ontop;
+                    lr.material.color = lr.material.color.SetAlpha(1);
                     line.transform.SetParent(go.transform, false);
 
                     go.SetActive(false);
@@ -150,7 +151,7 @@ namespace Exund.AdvancedBuilding
                     PhysicsInfo.COM.GetComponentInChildren<LineRenderer>().enabled = false;
 
                     PhysicsInfo.COT = GameObject.Instantiate(go);
-                    PhysicsInfo.COT.transform.localScale *= 0.75f;
+                    PhysicsInfo.COT.transform.localScale *= 0.8f;
                     var cotmat = PhysicsInfo.COT.GetComponent<MeshRenderer>().material;
                     cotmat.color = Color.magenta;
                     cotmat.renderQueue = 3;
@@ -159,7 +160,7 @@ namespace Exund.AdvancedBuilding
                     COTlr.startColor = COTlr.endColor = Color.magenta;
 
                     PhysicsInfo.COL = GameObject.Instantiate(go);
-                    PhysicsInfo.COL.transform.localScale *= 0.5625f;
+                    PhysicsInfo.COL.transform.localScale *= 0.64f;
                     var colmat = PhysicsInfo.COL.GetComponent<MeshRenderer>().material;
                     colmat.color = Color.cyan;
                     colmat.renderQueue = 5;
@@ -223,15 +224,6 @@ namespace Exund.AdvancedBuilding
                     codes[niv - 2].operand = typeof(TankBlock).GetProperty("cachedLocalPosition", BindingFlags.Instance | BindingFlags.Public).GetGetMethod(false);
                     codes[niv - 1] = new CodeInstruction(OpCodes.Nop);
 
-                    /*foreach (var ci in codes)
-                    {
-                        try
-                        {
-                            Console.WriteLine(ci.opcode.ToString() + "\t" + ci.operand.ToString());
-                        } catch {
-                            Console.WriteLine(ci.opcode.ToString());
-                        }
-                    }*/
                     return codes;
                 }
             }

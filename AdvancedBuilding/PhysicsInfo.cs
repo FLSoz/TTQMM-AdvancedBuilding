@@ -16,7 +16,8 @@ namespace Exund.AdvancedBuilding
 
         internal static KeyCode centers_key = KeyCode.M;
 
-        private float reference_velocity = 0;
+        private float reference_velocity = 100;
+        private bool use_tech_velocity = false;
 
         static float width = 300;
         static float height = 200;
@@ -118,7 +119,7 @@ namespace Exund.AdvancedBuilding
                         var direction = Vector3.zero;
                         var lift = 0f;
 
-                        var pointVelocity = Singleton.playerTank.trans.forward * reference_velocity;
+                        var pointVelocity = Singleton.playerTank.trans.forward * (use_tech_velocity ? Singleton.playerTank.GetForwardSpeed() : reference_velocity);
 
                         foreach (var wing in wings)
                         {
@@ -187,7 +188,12 @@ namespace Exund.AdvancedBuilding
             GUILayout.EndHorizontal();
             GUILayout.Label("COT Reference velocity");
             float.TryParse(GUILayout.TextField(reference_velocity.ToString()), out reference_velocity);
+            use_tech_velocity = GUILayout.Toggle(use_tech_velocity, "Use tech velocity");
             GUILayout.FlexibleSpace();
+            if(GUILayout.Button("Close"))
+            {
+                useGUILayout = false;
+            }
             GUI.DragWindow();
         }
     }
