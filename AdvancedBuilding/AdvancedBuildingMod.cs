@@ -5,7 +5,7 @@ using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
-using Harmony;
+using HarmonyLib;
 using Nuterra.BlockInjector;
 using ModHelper.Config;
 using Nuterra.NativeOptions;
@@ -24,7 +24,7 @@ namespace Exund.AdvancedBuilding
 
         public static void Load()
         {
-            var harmony = HarmonyInstance.Create("exund.advancedbuilding");
+            var harmony = new Harmony("exund.advancedbuilding");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
 
             assetBundle = AssetBundle.LoadFromFile(asm_path + "Assets/advancedbuilding");
