@@ -11,8 +11,11 @@ namespace Exund.AdvancedBuilding
         static readonly FieldInfo m_UpdateGrid = BlockPicker.T_UIPaletteBlockSelect.GetField("m_UpdateGrid", BindingFlags.NonPublic | BindingFlags.Instance);
         public static MethodInfo SetUIInputMode = typeof(ManInput).GetMethod("SetUIInputMode", BindingFlags.NonPublic | BindingFlags.Instance);
 
-        public static readonly Font ExoRegular = Resources.FindObjectsOfTypeAll<Font>().First(f => f.name == "Exo-Regular");
-        public static readonly Sprite Options_Unticked = Resources.FindObjectsOfTypeAll<Sprite>().First(f => f.name == "Options_Unticked");
+        public static readonly Font[] fonts = Resources.FindObjectsOfTypeAll<Font>();
+        public static readonly Sprite[] sprites = Resources.FindObjectsOfTypeAll<Sprite>();
+
+        public static readonly Font ExoRegular = fonts.First(f => f.name == "Exo-Regular");
+        public static readonly Sprite TEXT_FIELD_VERT_LEFT = sprites.First(f => f.name.Contains("TEXT_FIELD_VERT_LEFT"));
 
         public static bool clearOnCollapse = true;
 
@@ -40,11 +43,16 @@ namespace Exund.AdvancedBuilding
         {
             blockPalette = palette;
             var inputFieldGo = DefaultControls.CreateInputField(new DefaultControls.Resources() {
-                inputField = Options_Unticked
+                inputField = TEXT_FIELD_VERT_LEFT
             });
 
             inputField = inputFieldGo.GetComponent<InputField>();
             inputField.onValueChanged.AddListener(OnTextChanged);
+
+            var image = inputFieldGo.GetComponent<Image>();
+            image.color = new Color(0.2745f, 0.2745f, 0.2745f);
+
+            var textColor = new Color(0.4666f, 0.7529f, 1f);
 
             foreach (var text in inputFieldGo.GetComponentsInChildren<Text>())
             {
@@ -52,15 +60,15 @@ namespace Exund.AdvancedBuilding
                 text.alignment = TextAnchor.MiddleLeft;
                 text.font = ExoRegular;
                 text.fontSize = 20;
-                text.fontStyle = FontStyle.Normal;
-                text.color = Color.white;
+                text.fontStyle = FontStyle.Italic;
+                text.color = textColor;
                 text.lineSpacing = 1;
             }
 
             inputField.placeholder.enabled = true;
             var placeholderText = inputField.placeholder.GetComponent<Text>();
-            placeholderText.fontStyle = FontStyle.Italic;
             placeholderText.text = "Block name";
+            placeholderText.color = new Color(0.6784f, 0.6784f, 0.6784f);
 
             inputField.transform.SetParent(blockPalette.transform.Find("HUD_BlockPainting_BG"), false);
             var rect = inputFieldGo.GetComponent<RectTransform>();
