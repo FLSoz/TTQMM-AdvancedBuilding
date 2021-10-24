@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -10,7 +11,6 @@ using Nuterra.BlockInjector;
 using ModHelper.Config;
 using Nuterra.NativeOptions;
 
-
 namespace Exund.AdvancedBuilding
 {
     public class AdvancedBuildingMod
@@ -21,6 +21,8 @@ namespace Exund.AdvancedBuilding
         internal static RuntimeGizmos.TransformGizmo transformGizmo;
         internal static ModConfig config = new ModConfig();
         internal static string asm_path = Assembly.GetExecutingAssembly().Location.Replace("Exund.AdvancedBuilding.dll", "");
+
+        internal static bool kbdCategroryKeys = false;
 
         public static void Load()
         {
@@ -62,6 +64,8 @@ namespace Exund.AdvancedBuilding
                 config.TryGetConfig<int>("centers_key", ref key2);
                 PhysicsInfo.centers_key = (KeyCode)key2;
 
+                config.TryGetConfig<bool>("kbdCategroryKeys", ref kbdCategroryKeys);
+
 
                 string modName = "Advanced Building";
                 OptionKey blockPickerKey = new OptionKey("Block Picker activation key", modName, BlockPicker.block_picker_key);
@@ -97,13 +101,16 @@ namespace Exund.AdvancedBuilding
                 {
                     PhysicsInfo.centers_key = centersKey.SavedValue;
                     config["centers_key"] = (int)PhysicsInfo.centers_key;
-
                 });
 
-                NativeOptionsMod.onOptionsSaved.AddListener(() =>
+                OptionToggle enableKbdCategroryKeys = new OptionToggle("Use numerical keys (1-9) to select block category", modName, kbdCategroryKeys);
+                enableKbdCategroryKeys.onValueSaved.AddListener(() =>
                 {
-                    config.WriteConfigJsonFile();
+                    kbdCategroryKeys = enableKbdCategroryKeys.SavedValue;
+                    config["kbdCategroryKeys"] = kbdCategroryKeys;
                 });
+
+                NativeOptionsMod.onOptionsSaved.AddListener(() => { config.WriteConfigJsonFile(); });
 
                 new BlockPrefabBuilder(BlockTypes.GSOBlock_111, true)
                     .SetBlockID(7020)
@@ -113,7 +120,8 @@ namespace Exund.AdvancedBuilding
                     .SetCategory(BlockCategories.Accessories)
                     .SetRarity(BlockRarity.Rare)
                     .SetPrice(58860)
-                    .SetRecipe(new Dictionary<ChunkTypes, int> {
+                    .SetRecipe(new Dictionary<ChunkTypes, int>
+                    {
                         { ChunkTypes.SeedAI, 5 }
                     })
                     .SetModel(GameObjectJSON.MeshFromFile(asm_path + "Assets/hadamard_superposer.obj"), true, GameObjectJSON.GetObjectFromGameResources<Material>("RR_Main"))
@@ -170,7 +178,6 @@ namespace Exund.AdvancedBuilding
                 }
 
                 _holder.AddComponent<PhysicsInfo>();
-
             }
             catch (Exception e)
             {
@@ -269,6 +276,50 @@ namespace Exund.AdvancedBuilding
                     static void Postfix(ref bool __result)
                     {
                         PaletteTextFilter.OnPaletteCollapse(__result);
+                    }
+                }
+
+                [HarmonyPatch(typeof(UIPaletteBlockSelect), "Update")]
+                private static class Update
+                {
+                    private static readonly BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
+
+                    private static readonly FieldInfo
+                        m_CategoryToggles = typeof(UIPaletteBlockSelect).GetField("m_CategoryToggles", flags),
+                        m_Controller = typeof(UICategoryToggles).GetField("m_Controller", flags),
+                        m_Entries = typeof(UITogglesController).GetField("m_Entries", flags),
+                        m_Toggle = typeof(UITogglesController).GetNestedType("ToggleEntry", BindingFlags.NonPublic).GetField("m_Toggle");
+
+                    private static readonly int Alpha1 = (int)KeyCode.Alpha1;
+
+                    static void Prefix(ref UIPaletteBlockSelect __instance)
+                    {
+                        if (kbdCategroryKeys && __instance.IsExpanded)
+                        {
+                            var categoryToggles = (UICategoryToggles)m_CategoryToggles.GetValue(__instance);
+
+                            int selected = -1;
+
+                            var max = Alpha1 + categoryToggles.NumToggles;
+                            for (int i = Alpha1; i < max; i++)
+                            {
+                                if (Input.GetKeyDown((KeyCode)i))
+                                {
+                                    selected = i - Alpha1;
+                                }
+                            }
+
+                            if (selected >= 0)
+                            {
+                                var controller = m_Controller.GetValue(categoryToggles);
+                                var entries = (IList)m_Entries.GetValue(controller);
+                                var toggle = (ToggleWrapper)m_Toggle.GetValue(entries[selected]);
+                                categoryToggles.GetAllToggle().isOn = false;
+                                categoryToggles.ToggleAllOff();
+
+                                toggle.InvokeToggleHandler(true, false);
+                            }
+                        }
                     }
                 }
             }
