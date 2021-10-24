@@ -12,12 +12,12 @@ namespace Exund.AdvancedBuilding
         internal static bool open_inventory = false;
         internal static bool global_filters = true;
 
-        static BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
+        static readonly BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
         public static Type T_UIPaletteBlockSelect = typeof(UIPaletteBlockSelect);
-        static FieldInfo m_Grid = T_UIPaletteBlockSelect.GetField("m_Grid", flags);
-        static FieldInfo m_CategoryToggles = T_UIPaletteBlockSelect.GetField("m_CategoryToggles", flags);
-        static FieldInfo m_CorpToggles = T_UIPaletteBlockSelect.GetField("m_CorpToggles", flags);
-        static FieldInfo m_Controller = typeof(UICorpToggles).GetField("m_Controller", flags);
+        static readonly FieldInfo m_Grid = T_UIPaletteBlockSelect.GetField("m_Grid", flags);
+        static readonly FieldInfo m_CategoryToggles = T_UIPaletteBlockSelect.GetField("m_CategoryToggles", flags);
+        static readonly FieldInfo m_CorpToggles = T_UIPaletteBlockSelect.GetField("m_CorpToggles", flags);
+        static readonly FieldInfo m_Controller = typeof(UICorpToggles).GetField("m_Controller", flags);
 
         void Update()
         {
