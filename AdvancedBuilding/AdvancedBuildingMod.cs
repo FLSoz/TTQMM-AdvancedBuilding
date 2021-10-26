@@ -294,7 +294,7 @@ namespace Exund.AdvancedBuilding
 
                     static void Prefix(ref UIPaletteBlockSelect __instance)
                     {
-                        if (kbdCategroryKeys && __instance.IsExpanded)
+                        if (kbdCategroryKeys && __instance.IsExpanded && PaletteTextFilter.PreventPause())
                         {
                             var categoryToggles = (UICategoryToggles)m_CategoryToggles.GetValue(__instance);
 
