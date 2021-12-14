@@ -25,10 +25,9 @@ namespace Exund.AdvancedBuilding
 
         static readonly GUIContent[] space_types = new GUIContent[]
         {
-            new GUIContent("Global", GameObjectJSON.ImageFromFile(Path.Combine(AdvancedBuildingMod.asm_path, "Assets/global_tool.png")), "Global absolute space"), 
+            new GUIContent("Global", GameObjectJSON.ImageFromFile(Path.Combine(AdvancedBuildingMod.asm_path, "Assets/global_tool.png")), "Global absolute space"),
             new GUIContent("Local", GameObjectJSON.ImageFromFile(Path.Combine(AdvancedBuildingMod.asm_path, "Assets/local_tool.png")), "Block local space (affected by block rotation)")
         };
-
 
         internal static float position_step = 0.125f;
         internal static float rotation_step = 15f;
@@ -42,7 +41,7 @@ namespace Exund.AdvancedBuilding
         GUIStyle RightAlign;
 
         private Rect BlockInfo_Win = new Rect(Screen.width - 200, (Screen.height - 200f) / 2f, 200f, 250f);
-        private Rect Transform_Win = new Rect(Screen.width - 600f, 0, 600f, 250f);
+        private Rect Transform_Win = new Rect(Screen.width - 600f, 0, 600f, 325f);
         private Rect Setting_Win = new Rect(Screen.width - 200f, 250f, 200f, 200f);
         private Rect Tools_Win = new Rect(0, 0, 500f, 75f);
 
@@ -54,10 +53,11 @@ namespace Exund.AdvancedBuilding
         private Vector3 rotation;
         private Vector3 scale = Vector3.one;
 
+        private Vector3 cPosition;
+        private Vector3 cRotation;
+        private Vector3 cScale = Vector3.one;
+
         List<Transform> targets = new List<Transform>();
-
-
-
 
         private void Update()
         {
@@ -67,6 +67,7 @@ namespace Exund.AdvancedBuilding
             {
                 Clean();
             }
+
             if (Input.GetMouseButtonDown(2))
             {
                 if (block)
@@ -77,15 +78,17 @@ namespace Exund.AdvancedBuilding
                 try
                 {
                     Tank tank = null;
-                    if(block && module)
+                    if (block && module)
                     {
                         tank = block.tank;
                     }
+
                     var temp_block = Singleton.Manager<ManPointer>.inst.targetVisible.block;
-                    if(tank && temp_block.tank && tank != temp_block.tank)
+                    if (tank && temp_block.tank && tank != temp_block.tank)
                     {
                         Clean();
                     }
+
                     block = temp_block;
                     block.visible.EnableOutlineGlow(true, cakeslice.Outline.OutlineEnableReason.ScriptHighlight);
                 }
@@ -104,7 +107,8 @@ namespace Exund.AdvancedBuilding
                     rotation = block.trans.localEulerAngles;
                     scale = block.trans.localScale;
                 }
-                if(!block)
+
+                if (!block)
                 {
                     AdvancedBuildingMod.transformGizmo.enabled = false;
                 }
@@ -125,6 +129,7 @@ namespace Exund.AdvancedBuilding
                         alignment = TextAnchor.MiddleRight
                     };
                 }
+
                 BlockInfo_Win = GUI.Window(BlockInfo_ID, BlockInfo_Win, BlockInfoWindow, "Block Infos");
 
                 if (block.tank && block.tank.GetComponentInChildren<ModuleOffgridStore>())
@@ -135,16 +140,31 @@ namespace Exund.AdvancedBuilding
                         rotation = block.trans.localEulerAngles;
                         scale = block.trans.localScale;
 
-                        if(Singleton.Manager<ManPointer>.inst.BuildMode != (ManPointer.BuildingMode)10) Singleton.Manager<ManPointer>.inst.ChangeBuildMode((ManPointer.BuildingMode)10);
+                        if (Singleton.Manager<ManPointer>.inst.BuildMode != (ManPointer.BuildingMode)10)
+                        {
+                            Singleton.Manager<ManPointer>.inst.ChangeBuildMode((ManPointer.BuildingMode)10);
+                        }
+
                         Tools_Win = GUI.Window(Tools_ID, Tools_Win, ToolsWindow, "Tools");
-                    } 
+                    }
                     else
                     {
                         Transform_Win = GUI.Window(Transform_ID, Transform_Win, TransformWindow, "Block transform");
 
-                        if (position != block.trans.localPosition) block.trans.localPosition = position;
-                        if (rotation != block.trans.localEulerAngles) block.trans.localEulerAngles = rotation;
-                        if (scale != block.trans.localScale) block.trans.localScale = scale;
+                        if (position != block.trans.localPosition)
+                        {
+                            block.trans.localPosition = position;
+                        }
+
+                        if (rotation != block.trans.localEulerAngles)
+                        {
+                            block.trans.localEulerAngles = rotation;
+                        }
+
+                        if (scale != block.trans.localScale)
+                        {
+                            block.trans.localScale = scale;
+                        }
 
                         if (Settings_visible)
                         {
@@ -158,10 +178,10 @@ namespace Exund.AdvancedBuilding
                 Console.WriteLine(e.ToString());
             }
 
-            if(GUI.tooltip != "" && GUI.tooltip != null)
+            if (!string.IsNullOrEmpty(GUI.tooltip))
             {
                 var size = GUI.skin.label.CalcSize(new GUIContent(GUI.tooltip));
-                GUI.Label(new Rect(Mathf.Max(0, Input.mousePosition.x - size.x / 2), Screen.height - Input.mousePosition.y - size.y, size.x, size.y), GUI.tooltip);
+                GUI.Box(new Rect(Mathf.Max(0, Input.mousePosition.x - size.x / 2), Screen.height - Input.mousePosition.y - size.y - 5, size.x, size.y), GUI.tooltip);
             }
         }
 
@@ -220,18 +240,20 @@ namespace Exund.AdvancedBuilding
 
             if (block.tank && block.tank.GetComponentInChildren<ModuleOffgridStore>() && GUILayout.Button(AdvancedBuildingMod.transformGizmo.enabled ? "Disable gizmos" : "Enable gizmos"))
             {
-                if(AdvancedBuildingMod.transformGizmo.enabled)
+                if (AdvancedBuildingMod.transformGizmo.enabled)
                 {
                     targets = new List<Transform>(AdvancedBuildingMod.transformGizmo.TargetRootsOrdered);
                     Singleton.Manager<ManPointer>.inst.ChangeBuildMode(ManPointer.BuildingMode.Grab);
                 }
+
                 AdvancedBuildingMod.transformGizmo.enabled = !AdvancedBuildingMod.transformGizmo.enabled;
-                if(AdvancedBuildingMod.transformGizmo.enabled)
+                if (AdvancedBuildingMod.transformGizmo.enabled)
                 {
                     foreach (var target in targets)
                     {
                         AdvancedBuildingMod.transformGizmo.AddTarget(target);
                     }
+
                     SaveConfig();
                     Singleton.Manager<ManPointer>.inst.ChangeBuildMode((ManPointer.BuildingMode)10);
                 }
@@ -246,109 +268,101 @@ namespace Exund.AdvancedBuilding
         private void TransformWindow(int id)
         {
             GUILayout.FlexibleSpace();
+
             GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
             {
-                GUILayout.BeginVertical(GUILayout.Width(150f));
-                var x = position.x;
-                var y = position.y;
-                var z = position.z;
+                GUILayout.FlexibleSpace();
 
-                GUILayout.Label("X position");
-                x = AdvancedBuildingMod.NumberField(x, position_step);
-
-                GUILayout.Label("Y position");
-                y = AdvancedBuildingMod.NumberField(y, position_step);
-
-                GUILayout.Label("Z position");
-                z = AdvancedBuildingMod.NumberField(z, position_step);
-
-                GUILayout.BeginHorizontal();
-                if(GUILayout.Button("Snap to closest"))
+                GUILayout.BeginVertical();
                 {
-                    x = Mathf.Round(x / position_step) * position_step;
-                    y = Mathf.Round(y / position_step) * position_step;
-                    z = Mathf.Round(z / position_step) * position_step;
-                }
+                    position = AdvancedBuildingMod.Vector3Field(position, position_step, block.cachedLocalPosition, "position", GUILayout.Width(150f));
+                    GUILayout.BeginHorizontal();
+                    {
+                        if (GUILayout.Button("Copy", GUILayout.ExpandWidth(true)))
+                        {
+                            cPosition = position;
+                        }
 
-                position = new Vector3(x, y, z);
-
-                if (GUILayout.Button("Reset"))
-                {
-                    position = block.cachedLocalPosition;
+                        if (GUILayout.Button("Paste", GUILayout.ExpandWidth(true)))
+                        {
+                            position = cPosition;
+                        }
+                    }
+                    GUILayout.EndHorizontal();
                 }
-                GUILayout.EndHorizontal();
                 GUILayout.EndVertical();
-            }
-            GUILayout.FlexibleSpace();
-            {
-                GUILayout.BeginVertical(GUILayout.Width(150f));
-                var x = rotation.x;
-                var y = rotation.y;
-                var z = rotation.z;
 
-                GUILayout.Label("X rotation");
-                x = AdvancedBuildingMod.NumberField(x, rotation_step);
+                GUILayout.FlexibleSpace();
 
-                GUILayout.Label("Y rotation");
-                y = AdvancedBuildingMod.NumberField(y, rotation_step);
-
-                GUILayout.Label("Z rotation");
-                z = AdvancedBuildingMod.NumberField(z, rotation_step);
-
-                GUILayout.BeginHorizontal();
-                if (GUILayout.Button("Snap to closest"))
+                GUILayout.BeginVertical();
                 {
-                    x = Mathf.Round(x / rotation_step) * rotation_step;
-                    y = Mathf.Round(y / rotation_step) * rotation_step;
-                    z = Mathf.Round(z / rotation_step) * rotation_step;
-                }
+                    rotation = AdvancedBuildingMod.Vector3Field(rotation, rotation_step, block.cachedLocalRotation.ToEulers(), "rotation", GUILayout.Width(150f));
+                    GUILayout.BeginHorizontal();
+                    {
+                        if (GUILayout.Button("Copy", GUILayout.ExpandWidth(true)))
+                        {
+                            cRotation = rotation;
+                        }
 
-                rotation = new Vector3(x, y, z);
-
-                if (GUILayout.Button("Reset"))
-                {
-                    rotation = block.cachedLocalRotation.ToEulers();
+                        if (GUILayout.Button("Paste", GUILayout.ExpandWidth(true)))
+                        {
+                            rotation = cRotation;
+                        }
+                    }
+                    GUILayout.EndHorizontal();
                 }
-                GUILayout.EndHorizontal();
                 GUILayout.EndVertical();
-            }
-            GUILayout.FlexibleSpace();
-            {
-                GUILayout.BeginVertical(GUILayout.Width(150f));
-                var x = scale.x;
-                var y = scale.y;
-                var z = scale.z;
 
-                GUILayout.Label("X scale");
-                x = AdvancedBuildingMod.NumberField(x, scale_step);
+                GUILayout.FlexibleSpace();
 
-                GUILayout.Label("Y scale");
-                y = AdvancedBuildingMod.NumberField(y, scale_step);
-
-                GUILayout.Label("Z scale");
-                z = AdvancedBuildingMod.NumberField(z, scale_step);
-
-                GUILayout.BeginHorizontal();
-                if (GUILayout.Button("Snap to closest"))
+                GUILayout.BeginVertical();
                 {
-                    x = Mathf.Round(x / scale_step) * scale_step;
-                    y = Mathf.Round(y / scale_step) * scale_step;
-                    z = Mathf.Round(z / scale_step) * scale_step;
-                }
+                    scale = AdvancedBuildingMod.Vector3Field(scale, scale_step, Vector3.one, "scale", GUILayout.Width(150f));
+                    GUILayout.BeginHorizontal();
+                    {
+                        if (GUILayout.Button("Copy", GUILayout.ExpandWidth(true)))
+                        {
+                            cScale = scale;
+                        }
 
-                scale = new Vector3(x, y, z);
-
-                if (GUILayout.Button("Reset"))
-                {
-                    scale = Vector3.one;
+                        if (GUILayout.Button("Paste", GUILayout.ExpandWidth(true)))
+                        {
+                            scale = cScale;
+                        }
+                    }
+                    GUILayout.EndHorizontal();
                 }
-                GUILayout.EndHorizontal();
                 GUILayout.EndVertical();
+
+                GUILayout.FlexibleSpace();
             }
-            GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
-            if (GUILayout.Button("Open settings")) Settings_visible = true;
+
+            GUILayout.FlexibleSpace();
+
+            GUILayout.BeginHorizontal();
+            {
+                if (GUILayout.Button("Copy all"))
+                {
+                    cPosition = position;
+                    cRotation = rotation;
+                    cScale = scale;
+                }
+
+                if (GUILayout.Button("Paste all"))
+                {
+                    position = cPosition;
+                    rotation = cRotation;
+                    scale = cScale;
+                }
+            }
+            GUILayout.EndHorizontal();
+
+            if (GUILayout.Button("Open settings"))
+            {
+                Settings_visible = true;
+            }
+
             GUILayout.FlexibleSpace();
         }
 
@@ -357,16 +371,16 @@ namespace Exund.AdvancedBuilding
             GUILayout.Label("Position step");
             position_step = AdvancedBuildingMod.NumberField(position_step);
             AdvancedBuildingMod.transformGizmo.movementSnap = position_step;
-            
+
             GUILayout.Label("Rotation step");
             rotation_step = AdvancedBuildingMod.NumberField(rotation_step);
             AdvancedBuildingMod.transformGizmo.rotationSnap = rotation_step;
-            
+
             GUILayout.Label("Scale step");
             scale_step = AdvancedBuildingMod.NumberField(scale_step);
             AdvancedBuildingMod.transformGizmo.scaleSnap = scale_step;
-            
-            if(GUILayout.Button("Close"))
+
+            if (GUILayout.Button("Close"))
             {
                 Settings_visible = false;
                 SaveConfig();
@@ -383,7 +397,11 @@ namespace Exund.AdvancedBuilding
 
         private void Clean()
         {
-            if(block) block.visible.EnableOutlineGlow(false, cakeslice.Outline.OutlineEnableReason.ScriptHighlight);
+            if (block)
+            {
+                block.visible.EnableOutlineGlow(false, cakeslice.Outline.OutlineEnableReason.ScriptHighlight);
+            }
+
             block = null;
             module = null;
             useGUILayout = false;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.IO;
 using System.Reflection;
@@ -188,9 +189,9 @@ namespace Exund.AdvancedBuilding
         public static float NumberField(float value)
         {
             var h = GUILayout.Height(25f);
-            float.TryParse(GUILayout.TextField(value.ToString(), h), out float val);
+            float.TryParse(GUILayout.TextField(value.ToString(CultureInfo.InvariantCulture), h), out float val);
             val = (float)Math.Round(val, 6);
-            if (val != value)
+            if (Math.Abs(val - value) > 1e-6)
             {
                 GUI.changed = true;
             }
@@ -203,20 +204,73 @@ namespace Exund.AdvancedBuilding
             var h = GUILayout.Height(25f);
             var w = GUILayout.Width(25f);
 
+            float val;
             GUILayout.BeginHorizontal(h);
-            float.TryParse(GUILayout.TextField(value.ToString(), h), out float val);
-            if (GUILayout.Button("+", w, h))
-                val += interval;
-            if (GUILayout.Button("-", w, h))
-                val -= interval;
+            {
+                float.TryParse(GUILayout.TextField(value.ToString(CultureInfo.InvariantCulture), h), out val);
+                if (GUILayout.Button("+", w, h))
+                {
+                    val += interval;
+                }
+
+                if (GUILayout.Button("-", w, h))
+                {
+                    val -= interval;
+                }
+            }
             GUILayout.EndHorizontal();
+
             val = (float)Math.Round(val, 6);
-            if (val != value)
+            if (Math.Abs(val - value) > 1e-6)
             {
                 GUI.changed = true;
             }
 
             return val;
+        }
+
+        public static Vector3 Vector3Field(Vector3 value, float interval, Vector3 defaultValue, string additionalText, params GUILayoutOption[] options)
+        {
+            Vector3 ret;
+            GUILayout.BeginVertical(options);
+            {
+                var x = value.x;
+                var y = value.y;
+                var z = value.z;
+
+                GUILayout.Label($"X {additionalText}");
+                x = NumberField(x, interval);
+
+                GUILayout.Label($"Y {additionalText}");
+                y = NumberField(y, interval);
+
+                GUILayout.Label($"Z {additionalText}");
+                z = NumberField(z, interval);
+
+                ret = new Vector3(x, y, z);
+
+                GUILayout.BeginHorizontal();
+                {
+                    if (GUILayout.Button("Snap to closest"))
+                    {
+                        for (int i = 0; i < 3; i++)
+                        {
+                            ret[i] = Mathf.Round(ret[i] / interval) * interval;
+                        }
+                    }
+
+                    GUILayout.FlexibleSpace();
+
+                    if (GUILayout.Button("Reset"))
+                    {
+                        ret = defaultValue;
+                    }
+                }
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.EndVertical();
+
+            return ret;
         }
 
         private static class Patches
