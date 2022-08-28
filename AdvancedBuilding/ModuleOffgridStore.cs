@@ -33,7 +33,6 @@ namespace Exund.AdvancedBuilding
 			base.block.tank.ResetPhysicsEvent.Unsubscribe(this.OnTankPostSpawn);
 		}
 
-
 		private void OnSerialize(bool saving, TankPreset.BlockSpec blockSpec)
         {
 			if (saving)

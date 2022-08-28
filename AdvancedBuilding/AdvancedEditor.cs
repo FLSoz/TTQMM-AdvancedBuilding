@@ -4,30 +4,14 @@ using System.IO;
 using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
-using Nuterra.BlockInjector;
 
 namespace Exund.AdvancedBuilding
 {
     class AdvancedEditor : MonoBehaviour
     {
-        static readonly GUIContent[] transform_types = new GUIContent[]
-        {
-            new GUIContent(GameObjectJSON.ImageFromFile(Path.Combine(AdvancedBuildingMod.asm_path, "Assets/move_tool.png")), "Move"),
-            new GUIContent(GameObjectJSON.ImageFromFile(Path.Combine(AdvancedBuildingMod.asm_path, "Assets/rotate_tool.png")), "Rotate"),
-            new GUIContent(GameObjectJSON.ImageFromFile(Path.Combine(AdvancedBuildingMod.asm_path, "Assets/scale_tool.png")), "Scale")
-        };
-
-        static readonly GUIContent[] pivot_types = new GUIContent[]
-        {
-            new GUIContent("Pivot", GameObjectJSON.ImageFromFile(Path.Combine(AdvancedBuildingMod.asm_path, "Assets/pivot_tool.png")), "Individual blocks centers"),
-            new GUIContent("Center", GameObjectJSON.ImageFromFile(Path.Combine(AdvancedBuildingMod.asm_path, "Assets/center_tool.png")), "Average center of selected blocks")
-        };
-
-        static readonly GUIContent[] space_types = new GUIContent[]
-        {
-            new GUIContent("Global", GameObjectJSON.ImageFromFile(Path.Combine(AdvancedBuildingMod.asm_path, "Assets/global_tool.png")), "Global absolute space"),
-            new GUIContent("Local", GameObjectJSON.ImageFromFile(Path.Combine(AdvancedBuildingMod.asm_path, "Assets/local_tool.png")), "Block local space (affected by block rotation)")
-        };
+        internal static GUIContent[] transform_types;
+        internal static GUIContent[] pivot_types;
+        internal static GUIContent[] space_types;
 
         internal static float position_step = 0.125f;
         internal static float rotation_step = 15f;
@@ -61,8 +45,6 @@ namespace Exund.AdvancedBuilding
 
         private void Update()
         {
-            PaletteTextFilter.HandleInputFieldFocus();
-
             if (block && !block.gameObject.activeInHierarchy || module && !module.block.gameObject.activeInHierarchy)
             {
                 Clean();
